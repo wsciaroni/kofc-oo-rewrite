@@ -3,3 +3,5 @@ applications/frontend/android/
 applications/frontend/macos/
 applications/frontend/windows/
 applications/frontend/linux/
+applications/backend/bin/
+applications/backend/obj/

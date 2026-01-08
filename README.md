@@ -264,3 +264,22 @@ enum TransactionType {
 4. **Phase 4: Comms & Offline**
 * Implement "Schedule Send" (Backend Worker).
 * Finalize `Isar` local database sync for offline mode.
+
+## 7. Proto Generation
+
+### Backend
+The backend automatically generates C# classes from the `.proto` files located in the `protos/` directory during the build process.
+To verify, run:
+```bash
+dotnet build applications/backend
+```
+
+### Frontend
+The frontend requires manual generation of Dart classes using the `generate_protos.sh` script.
+Prerequisites: `protoc` compiler must be installed.
+To generate protos:
+```bash
+cd applications/frontend
+./generate_protos.sh
+```
+This will generate the Dart files in `applications/frontend/lib/src/generated/`.
