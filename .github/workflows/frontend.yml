@@ -1,0 +1,27 @@
+name: Frontend
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'applications/frontend/**'
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - 'applications/frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./applications/frontend
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+    - run: flutter pub get
+    - run: flutter analyze
+    - run: flutter test

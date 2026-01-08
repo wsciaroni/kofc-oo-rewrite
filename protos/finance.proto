@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package kofc.finance.v1;
+
+import "google/type/money.proto";
+import "google/protobuf/timestamp.proto";
+
+service FinanceService {
+  // Record a ledger entry (Expense or Income)
+  rpc RecordTransaction (TransactionRequest) returns (TransactionResponse);
+
+  // Update a member's dues status (e.g. Mark Paid)
+  rpc UpdateDuesStatus (DuesUpdateRequest) returns (DuesUpdateResponse);
+}
+
+message TransactionRequest {
+  int32 council_id = 1;
+  TransactionType type = 2; // INCOME or EXPENSE
+  google.type.Money amount = 3;
+  string description = 4;
+  string check_number = 5; // Optional
+  int32 linked_member_id = 6; // Optional (if Dues payment)
+}
+
+enum TransactionType {
+  TRANSACTION_TYPE_UNSPECIFIED = 0;
+  TRANSACTION_TYPE_INCOME = 1;
+  TRANSACTION_TYPE_EXPENSE = 2;
+}
+
+// Added to make the proto compilable
+message TransactionResponse {
+  bool success = 1;
+  string transaction_id = 2;
+}
+
+message DuesUpdateRequest {
+  int32 member_id = 1;
+  bool is_paid = 2;
+}
+
+message DuesUpdateResponse {
+  bool success = 1;
+}
