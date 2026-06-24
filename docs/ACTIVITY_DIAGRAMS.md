@@ -122,3 +122,97 @@ end fork
 stop
 @enduml
 ```
+
+## 3. Form 10784 Program Activity Submission
+
+This diagram details the flow when an officer or director submits a new program activity, handling offline capability.
+
+```plantuml
+@startuml
+start
+
+:User opens "New Program Activity Form";
+:Enter Activity Name, Category, Date, Volunteer Count, Hours, Monies;
+:Validate Inputs;
+
+if (Inputs Valid?) then (No)
+  :Display Validation Errors;
+  stop
+else (Yes)
+  if (App Online?) then (No)
+    :Save Activity to Isar (Status: DRAFT);
+    :Queue Submit Activity Mutation in Log;
+    :Show Status: "Saved Offline (Pending Sync)";
+    stop
+  else (Yes)
+    :Call backend SubmitProgramActivity();
+    :Backend persists in local DB;
+    :Backend Mock Syncs with Supreme DB;
+    :Generate Supreme Confirmation Number;
+    :Return Success response with Confirmation Number;
+    :Save to Isar (Status: SUBMITTED);
+    :Show Status: "Submitted to Supreme";
+  endif
+endif
+
+stop
+@enduml
+```
+
+## 4. Star Council Status Calculation
+
+How the backend aggregates data to calculate progress toward the Star Council Award.
+
+```plantuml
+@startuml
+start
+
+:Request GetStarCouncilStatus();
+:Backend queries active Fraternal Year parameters;
+
+fork
+  :Fetch Membership Growth;
+  :Calculate Net Growth;
+  if (Net Growth >= Membership Quota?) then (Yes)
+    :Mark Father McGivney qualified;
+  else (No)
+    :Mark Father McGivney incomplete;
+  endif
+fork again
+  :Fetch Submitted Form 11077 (Insurance Seminars);
+  if (Seminars Count >= 2?) then (Yes)
+    :Mark Founders' qualified;
+  else (No)
+    :Mark Founders' incomplete;
+  endif
+fork again
+  :Fetch Form 10784 (Program Activities) for Council;
+  :Group by Category (Faith, Family, Community, Life);
+  if (All categories have >= 4 activities?) then (Yes)
+    :Mark Columbian qualified;
+  else (No)
+    :Mark Columbian incomplete;
+  endif
+fork again
+  :Query required form submissions (185, 365, 1728);
+  :Check compliance dates;
+fork again
+  :Check Safe Environment compliance status;
+  :Verify GK, FS, Family and Community Directors;
+end fork
+
+:Compile GetStarCouncilStatusResponse;
+if (McGivney, Founders', Columbian, Forms & Safe Environment all qualified?) then (Yes)
+  :Set star_council_qualified = true;
+else (No)
+  :Set star_council_qualified = false;
+endif
+
+:Return Response to Frontend;
+:Frontend displays Tracker Dashboard;
+:Render progress bars & visual status indicators;
+
+stop
+@enduml
+```
+

@@ -15,10 +15,11 @@ The system is a multi-platform administrative dashboard for local Council Office
 
 ## 2. User Roles & Permissions
 
-* **Financial Secretary (FS):** Primary Administrator. Manages finances, membership roster, and transfers.
-* **Grand Knight (GK):** Council Leader. Oversees reports, compliance, and officer assignments.
-* **Delegate (New):** A standard member granted specific granular permissions (e.g., *Scribe*  "Send Email", *Treasurer*  "View Ledger").
-* **District/State Officer:** Read-only access to multiple councils within their jurisdiction.
+* **Financial Secretary (FS):** Primary Administrator. Manages finances, membership roster, transfers, program submissions, and compliance tracking.
+* **Grand Knight (GK):** Council Leader. Oversees reports, compliance, officer assignments, and Star Council tracker status.
+* **Delegate (New):** A standard member granted specific granular permissions (e.g., *Scribe*  "Send Email", *Treasurer*  "View Ledger", *Program Director* "Submit Form 10784").
+* **District/State Officer:** Read-only access to multiple councils within their jurisdiction to monitor compliance and Star Council progress.
+* **Member:** Standard member. Can view their own digital card and view the council's Star Council Tracker progress dashboard.
 
 ---
 
@@ -78,6 +79,25 @@ The system is a multi-platform administrative dashboard for local Council Office
 * **Bulk Email:** Filter recipients by degree, officer role, or dues status.
 * **Schedule Send:** Users can draft an email and select a future date/time for delivery.
 
+
+### 3.5 Program Activities Reporting (Form 10784)
+
+* **Activity Reporting:** Officers and designated Delegates (Directors) can submit Form 10784 for council events under the "Faith in Action" categories (Faith, Family, Community, Life).
+* **Metrics Tracked:** Event name, category, date, volunteer counts, total volunteer hours, monies raised, and monies donated.
+* **Offline Drafts:** Users can save draft forms locally and submit them later when connected.
+* **Supreme Integration:** Successful submissions generate a mock Supreme Confirmation Number.
+
+
+### 3.6 Star Council Tracker
+
+* **Dashboard Visuals:** Real-time progress bars showing completion status for the Star Council Award.
+* **Award Requirements Tracked:**
+  * **Father McGivney Award:** Membership growth against quota.
+  * **Founders' Award:** Insurance seminars held (Form 11077).
+  * **Columbian Award:** Progress check for having at least 4 programs in each category (Faith, Family, Community, Life).
+  * **Administrative Compliance:** Submission status of Form 185, Form 365, and Form 1728.
+  * **Safe Environment Status:** Visual traffic-light indicators for required officer training and background checks.
+
 ---
 
 ## 4. Technical Architecture
@@ -108,7 +128,7 @@ To solve the connectivity issue, the app uses a **"Synchronization"** pattern.
 
 ### 4.3 Database Schema (ERD)
 
-Updated to include the full Financial Ledger.
+Updated to include the Financial Ledger and Program Activity Submissions.
 
 ```plantuml
 @startuml
@@ -149,11 +169,28 @@ entity "Dues_Record" as dues {
   status : enum (Unpaid, FirstNotice, Paid)
 }
 
+entity "Program_Activity" as activity {
+  *activity_id : string
+  --
+  council_id : int
+  submitter_member_number : string
+  category : enum (Faith, Family, Community, Life)
+  activity_name : string
+  event_date : timestamp
+  volunteer_count : int
+  volunteer_hours : int
+  money_donated : money
+  money_raised : money
+  description : string
+  status : enum (Draft, PendingSync, Submitted)
+  supreme_confirmation_number : string
+}
+
 member ||..|{ dues
 member ||..|{ ledger : "Linked (if Dues Payment)"
+member ||..|{ activity : "Submits"
 
 @enduml
-
 ```
 
 ---
@@ -243,6 +280,114 @@ enum TransactionType {
 
 ```
 
+### 5.3 Activity Service
+
+**File:** `protos/activity.proto`
+
+```protobuf
+syntax = "proto3";
+
+package kofc.activity.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+
+service ActivityService {
+  // Submit a Form 10784 (Fraternal Programs Report)
+  rpc SubmitProgramActivity (SubmitProgramActivityRequest) returns (SubmitProgramActivityResponse);
+
+  // Retrieve the historical/current list of submitted program activities
+  rpc GetProgramActivities (GetProgramActivitiesRequest) returns (stream ProgramActivityProfile);
+
+  // Retrieve the Star Council tracker status for the current Fraternal Year
+  rpc GetStarCouncilStatus (GetStarCouncilStatusRequest) returns (GetStarCouncilStatusResponse);
+}
+
+enum ProgramCategory {
+  PROGRAM_CATEGORY_UNSPECIFIED = 0;
+  PROGRAM_CATEGORY_FAITH = 1;
+  PROGRAM_CATEGORY_FAMILY = 2;
+  PROGRAM_CATEGORY_COMMUNITY = 3;
+  PROGRAM_CATEGORY_LIFE = 4;
+}
+
+enum FormStatus {
+  FORM_STATUS_UNSPECIFIED = 0;
+  FORM_STATUS_DRAFT = 1;
+  FORM_STATUS_PENDING_SYNC = 2;
+  FORM_STATUS_SUBMITTED = 3;
+}
+
+message SubmitProgramActivityRequest {
+  string activity_id = 1;
+  int32 council_id = 2;
+  string submitter_member_number = 3;
+  ProgramCategory category = 4;
+  string activity_name = 5;
+  google.protobuf.Timestamp event_date = 6;
+  int32 volunteer_count = 7;
+  int32 volunteer_hours = 8;
+  google.type.Money money_donated = 9;
+  google.type.Money money_raised = 10;
+  string description = 11;
+  FormStatus status = 12;
+}
+
+message SubmitProgramActivityResponse {
+  bool success = 1;
+  string activity_id = 2;
+  string supreme_confirmation_number = 3;
+  string message = 4;
+}
+
+message GetProgramActivitiesRequest {
+  int32 council_id = 1;
+  int32 fraternal_year = 2;
+}
+
+message ProgramActivityProfile {
+  string activity_id = 1;
+  int32 council_id = 2;
+  string submitter_member_number = 3;
+  ProgramCategory category = 4;
+  string activity_name = 5;
+  google.protobuf.Timestamp event_date = 6;
+  int32 volunteer_count = 7;
+  int32 volunteer_hours = 8;
+  google.type.Money money_donated = 9;
+  google.type.Money money_raised = 10;
+  string description = 11;
+  FormStatus status = 12;
+  string supreme_confirmation_number = 13;
+}
+
+message GetStarCouncilStatusRequest {
+  int32 council_id = 1;
+  int32 fraternal_year = 2;
+}
+
+message GetStarCouncilStatusResponse {
+  int32 council_id = 1;
+  int32 fraternal_year = 2;
+  int32 membership_target = 3;
+  int32 membership_achieved = 4;
+  bool mcgivney_qualified = 5;
+  int32 insurance_seminars_target = 6;
+  int32 insurance_seminars_achieved = 7;
+  bool founders_qualified = 8;
+  int32 faith_programs_achieved = 9;
+  int32 family_programs_achieved = 10;
+  int32 community_programs_achieved = 11;
+  int32 life_programs_achieved = 12;
+  bool columbian_qualified = 13;
+  bool form_185_submitted = 14;
+  bool form_365_submitted = 15;
+  bool form_1728_submitted = 16;
+  bool safe_environment_compliant = 17;
+  bool star_council_qualified = 18;
+}
+```
+
 ---
 
 ## 6. Development Roadmap
@@ -260,10 +405,17 @@ enum TransactionType {
 * Build the "Mark Paid" toggle.
 * Build the "Add Expense/Voucher" form.
 
+4. **Phase 4: Program Activities & Star Council Tracker**
+* Set up database models for `ProgramActivity` (Form 10784).
+* Implement `ActivityService` on the backend.
+* Create the Form 10784 wizard and Star Council dashboard on the frontend.
 
-4. **Phase 4: Comms & Offline**
+5. **Phase 5: Comms & Offline Sync**
 * Implement "Schedule Send" (Backend Worker).
-* Finalize `Isar` local database sync for offline mode.
+* Integrate `Isar` local database sync for offline mode, including offline Form 10784 submissions and mutation queue synchronization.
+
+6. **Phase 6: Finalization & Polish**
+* End-to-end testing, UI styling enhancements, and final documentation.
 
 ## 7. Proto Generation
 

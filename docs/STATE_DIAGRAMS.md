@@ -111,3 +111,55 @@ Audited --> [*]
 
 @enduml
 ```
+
+## 4. Program Activity Status Lifecycle (Form 10784)
+
+Tracks the workflow of a service program submission from creation to Supreme confirmation.
+
+```plantuml
+@startuml
+
+[*] --> Draft : Create New Activity
+
+Draft --> Draft : Edit locally (Offline/Online)
+Draft --> PendingSync : Submit Offline
+Draft --> Submitted : Submit Online
+
+PendingSync --> Submitted : Network Restored (Sync Process)
+
+state Submitted {
+  [*] --> ReceivedByBackend
+  ReceivedByBackend --> SyncingToSupreme : Forward to Supreme DB
+}
+
+Submitted --> Acknowledged : Supreme returns Confirmation Number
+Acknowledged --> [*]
+
+@enduml
+```
+
+## 5. Star Council Progress Status Lifecycle
+
+Tracks the council's progress toward achieving the Star Council Award during a Fraternal Year.
+
+```plantuml
+@startuml
+
+[*] --> NotMet : Fraternal Year Begins (July 1st)
+
+NotMet --> IncompleteProgress : First requirement met\n(e.g., Form 185 submitted)
+
+state IncompleteProgress {
+  [*] --> Monitoring
+  Monitoring --> PartialsMet : Growth, Seminars, or Programs recorded
+}
+
+IncompleteProgress --> AllRequirementsMet : McGivney, Founders', Columbian,\nForms & Safe Env all complete
+AllRequirementsMet --> IncompleteProgress : Compliance issue arises\n(e.g., Safe Env role changes)
+
+AllRequirementsMet --> AwardEarned : Audited & Approved by Supreme Council
+AwardEarned --> [*] : Fraternal Year Closes (June 30th)
+
+@enduml
+```
+

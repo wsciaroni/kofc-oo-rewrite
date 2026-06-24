@@ -195,57 +195,105 @@ This document outlines the step-by-step development plan to move the "Officers O
 
 ---
 
-## Phase 5: Offline Architecture
+## Phase 5: Program Activities & Star Council Tracker
 
-### Task 5.1: Frontend - Isar Integration
-*   **Dependencies:** Task 2.2, Task 4.2.
+### Task 5.1: Backend - Program Activities & Star Council Logic
+*   **Dependencies:** Task 2.1 (Membership Data Layer), Task 4.1 (Finance Services).
 *   **Acceptance Criteria:**
-    *   `isar` package installed.
-    *   Isar Collections defined (`LocalMember`, `LocalTransaction`).
-    *   App works offline (reads from Isar).
+    *   `ProgramActivity` entity added to DB using EF Core.
+    *   gRPC service `ActivityService` implemented on the backend.
+    *   `SubmitProgramActivity` records Form 10784 submissions and generates a Supreme Confirmation Number.
+    *   `GetStarCouncilStatus` dynamically calculates status against quotas (Membership, Seminars, Faith/Family/Community/Life program count) and form submission checks.
 *   **Description:**
-    1.  Add `isar`, `isar_flutter_libs` to pubspec.
-    2.  Define Isar schemas mirroring Proto definitions.
-    3.  Update Repositories to:
-        *   Read from Isar first.
-        *   If online, fetch from gRPC, save to Isar, return fresh data.
-        *   If offline, return Isar data.
-    4.  **Definition of Done:**
-        *   **Documentation:** Document the Offline-First strategy and Isar schema.
-        *   **Unit Tests:** Test Isar read/write operations and Repository fallback logic.
-        *   **Integration Tests:** Simulate offline mode and verify app still loads data.
-        *   **Static Analysis:** Run `flutter analyze` and ensure 0 warnings.
+    1.  Create `ProgramActivity` database model (ActivityId, CouncilId, Category, SubmitterNumber, VolunteerCount, Hours, MoneyDonated, MoneyRaised, Status, etc.).
+    2.  Add model to `AppDbContext`, generate EF migration, and apply to database.
+    3.  Create `Services/ActivityService.cs` inheriting from `ActivityServiceBase`.
+    4.  Implement logic in `GetStarCouncilStatus` to aggregate council-specific numbers (membership intake growth, insurance seminar counts, submitted programs per category, compliance status).
+    5.  **Definition of Done:**
+        *   **Documentation:** Document the calculation rules for the Star Council Award in the code comments and database schema documentation.
+        *   **Unit Tests:** Add unit tests for `ActivityService` verifying calculations for qualified vs non-qualified states.
+        *   **Integration Tests:** Verify `SubmitProgramActivity` persists activity records.
+        *   **Static Analysis:** Ensure C# build compiles with 0 warnings.
 
-### Task 5.2: Frontend - Sync & Mutation Queue
-*   **Dependencies:** Task 5.1.
+### Task 5.2: Frontend - Form 10784 Activity Wizard
+*   **Dependencies:** Task 1.3 (gRPC Infrastructure), Task 5.1.
 *   **Acceptance Criteria:**
-    *   Offline actions (Add Member, Mark Paid) are queued.
-    *   When connectivity restores, queue is processed.
+    *   A wizard screen to input activity details (Name, Date, Category, Submitter, Volunteer Count, Hours, Monies).
+    *   Input validation for mandatory fields.
+    *   Calls gRPC `SubmitProgramActivity` on submit.
 *   **Description:**
-    1.  Create `MutationQueue` in Isar (storing ActionType + Payload).
-    2.  Create `SyncService` that monitors connectivity.
-    3.  On connect: Iterate Queue -> Call gRPC -> Delete from Queue.
+    1.  Create `lib/features/activities/presentation/screens/activity_form_screen.dart`.
+    2.  Build the form inputs with Flutter Form widgets.
+    3.  Implement `ActivityBloc` to handle state (Drafting, Submitting, Success, Error).
     4.  **Definition of Done:**
-        *   **Documentation:** Document the Sync/Mutation logic.
-        *   **Unit Tests:** Test Queue addition and processing logic.
-        *   **Integration Tests:** Test the full cycle: Offline Action -> Reconnect -> Sync.
-        *   **Static Analysis:** Run `flutter analyze` and ensure 0 warnings.
+        *   **Documentation:** Add screenshots of the activity wizard to documentation.
+        *   **Unit Tests:** Test validation logic and BLoC states.
+        *   **Integration Tests:** Widget test ensuring form validation prevents submission with invalid fields.
+        *   **Static Analysis:** Run `flutter analyze` with 0 warnings.
+
+### Task 5.3: Frontend - Star Council Tracker Dashboard
+*   **Dependencies:** Task 5.1, Task 2.2.
+*   **Acceptance Criteria:**
+    *   An interactive dashboard showing progress towards Star Council status.
+    *   Visual progress indicators for McGivney, Founders', and Columbian awards.
+    *   Checklists for required forms (185, 365, 1728) and Safe Environment status.
+*   **Description:**
+    1.  Create `lib/features/activities/presentation/screens/star_council_dashboard.dart`.
+    2.  Build visual progress bars/graphs using custom painter or core widgets.
+    3.  Implement `StarCouncilBloc` to fetch status and handle pull-to-refresh.
+    4.  **Definition of Done:**
+        *   **Documentation:** Document dashboard components.
+        *   **Unit Tests:** Test `StarCouncilBloc` state emissions.
+        *   **Integration Tests:** Widget test of progress rendering.
+        *   **Static Analysis:** Run `flutter analyze` with 0 warnings.
 
 ---
 
-## Phase 6: Finalization
+## Phase 6: Offline Architecture & Synchronization
 
-### Task 6.1: Documentation & Polish
+### Task 6.1: Frontend - Isar Integration (Extended)
+*   **Dependencies:** Task 2.2, Task 4.2, Task 5.2.
+*   **Acceptance Criteria:**
+    *   `LocalProgramActivity` collection added to Isar.
+    *   Form 10784 activities can be saved locally as drafts and read while offline.
+*   **Description:**
+    1.  Define Isar schema `LocalProgramActivity`.
+    2.  Update `ActivityRepository` to load from Isar first, fall back or refresh from gRPC when online.
+    3.  **Definition of Done:**
+        *   **Documentation:** Document updated Isar schema mapping.
+        *   **Unit Tests:** Test Isar read/write for local activity records.
+        *   **Integration Tests:** Verify local CRUD operations on activities when offline.
+        *   **Static Analysis:** Run `flutter analyze` with 0 warnings.
+
+### Task 6.2: Frontend - Sync & Mutation Queue (Extended)
+*   **Dependencies:** Task 6.1, Task 5.2.
+*   **Acceptance Criteria:**
+    *   Offline Form 10784 submissions are added to the local mutation queue.
+    *   On network reconnection, mutation queue replays submissions to the backend.
+*   **Description:**
+    1.  Update the existing `MutationQueue` to support activity sync payloads.
+    2.  Update `SyncService` to process pending activity mutations and replace temporary IDs with Supreme confirmation numbers.
+    3.  **Definition of Done:**
+        *   **Documentation:** Update sync sequence diagrams and explanation.
+        *   **Unit Tests:** Test mutation queue serialization/deserialization for activities.
+        *   **Integration Tests:** Mock network transition offline -> online and verify sync triggers.
+        *   **Static Analysis:** Run `flutter analyze` with 0 warnings.
+
+---
+
+## Phase 7: Finalization & Polish
+
+### Task 7.1: Documentation & Polish
 *   **Dependencies:** All above.
 *   **Acceptance Criteria:**
-    *   Updated `README.md` with screenshots.
-    *   All Code comments are clear.
+    *   Updated `README.md` and docs.
+    *   Clean source code comments and zero linter warnings.
 *   **Description:**
-    1.  Review all features.
-    2.  Generate final screenshots.
-    3.  Ensure `AGENTS.md` is updated with any new conventions.
+    1.  Review all feature flows (Membership, Finance, Activities, Tracker).
+    2.  Update help guides and documentation screenshots.
+    3.  Verify full test coverage.
     4.  **Definition of Done:**
-        *   **Documentation:** Finalize all project documentation (`README.md`, `AGENTS.md`).
-        *   **Unit Tests:** Ensure overall project coverage > 80%.
+        *   **Documentation:** Finalize documentation.
+        *   **Unit Tests:** Ensure coverage > 80%.
         *   **Integration Tests:** Run full regression suite.
-        *   **Static Analysis:** Zero warnings across the entire codebase.
+        *   **Static Analysis:** Zero compiler or linter warnings across the repository.

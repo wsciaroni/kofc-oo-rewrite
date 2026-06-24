@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package kofc.activity.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+
+service ActivityService {
+  // Submit a Form 10784 (Fraternal Programs Report)
+  rpc SubmitProgramActivity (SubmitProgramActivityRequest) returns (SubmitProgramActivityResponse);
+
+  // Retrieve the historical/current list of submitted program activities
+  rpc GetProgramActivities (GetProgramActivitiesRequest) returns (stream ProgramActivityProfile);
+
+  // Retrieve the Star Council tracker status for the current Fraternal Year
+  rpc GetStarCouncilStatus (GetStarCouncilStatusRequest) returns (GetStarCouncilStatusResponse);
+}
+
+enum ProgramCategory {
+  PROGRAM_CATEGORY_UNSPECIFIED = 0;
+  PROGRAM_CATEGORY_FAITH = 1;
+  PROGRAM_CATEGORY_FAMILY = 2;
+  PROGRAM_CATEGORY_COMMUNITY = 3;
+  PROGRAM_CATEGORY_LIFE = 4;
+}
+
+enum FormStatus {
+  FORM_STATUS_UNSPECIFIED = 0;
+  FORM_STATUS_DRAFT = 1;
+  FORM_STATUS_PENDING_SYNC = 2;
+  FORM_STATUS_SUBMITTED = 3;
+}
+
+message SubmitProgramActivityRequest {
+  string activity_id = 1; // Clients can generate UUIDs for offline mapping
+  int32 council_id = 2;
+  string submitter_member_number = 3;
+  ProgramCategory category = 4;
+  string activity_name = 5;
+  google.protobuf.Timestamp event_date = 6;
+  int32 volunteer_count = 7;
+  int32 volunteer_hours = 8;
+  google.type.Money money_donated = 9;
+  google.type.Money money_raised = 10;
+  string description = 11;
+  FormStatus status = 12;
+}
+
+message SubmitProgramActivityResponse {
+  bool success = 1;
+  string activity_id = 2;
+  string supreme_confirmation_number = 3;
+  string message = 4;
+}
+
+message GetProgramActivitiesRequest {
+  int32 council_id = 1;
+  int32 fraternal_year = 2; // e.g. 2025 for 2025-2026 year
+}
+
+message ProgramActivityProfile {
+  string activity_id = 1;
+  int32 council_id = 2;
+  string submitter_member_number = 3;
+  ProgramCategory category = 4;
+  string activity_name = 5;
+  google.protobuf.Timestamp event_date = 6;
+  int32 volunteer_count = 7;
+  int32 volunteer_hours = 8;
+  google.type.Money money_donated = 9;
+  google.type.Money money_raised = 10;
+  string description = 11;
+  FormStatus status = 12;
+  string supreme_confirmation_number = 13;
+}
+
+message GetStarCouncilStatusRequest {
+  int32 council_id = 1;
+  int32 fraternal_year = 2;
+}
+
+message GetStarCouncilStatusResponse {
+  int32 council_id = 1;
+  int32 fraternal_year = 2;
+
+  // McGivney Award (Membership growth)
+  int32 membership_target = 3;
+  int32 membership_achieved = 4;
+  bool mcgivney_qualified = 5;
+
+  // Founders' Award (Insurance seminars)
+  int32 insurance_seminars_target = 6; // Usually 2
+  int32 insurance_seminars_achieved = 7;
+  bool founders_qualified = 8;
+
+  // Columbian Award (Service Programs - 4 in each category required)
+  int32 faith_programs_achieved = 9;
+  int32 family_programs_achieved = 10;
+  int32 community_programs_achieved = 11;
+  int32 life_programs_achieved = 12;
+  bool columbian_qualified = 13; // True if all 4 categories have >= 4 programs
+
+  // Required Forms Compliance
+  bool form_185_submitted = 14;  // Report of Officers
+  bool form_365_submitted = 15;  // Service Program Personnel Report
+  bool form_1728_submitted = 16; // Annual Survey of Fraternal Activity
+
+  // Safe Environment Compliance
+  bool safe_environment_compliant = 17; // All mandated officers background-checked & trained
+
+  // Final Overall Award Status
+  bool star_council_qualified = 18;
+}

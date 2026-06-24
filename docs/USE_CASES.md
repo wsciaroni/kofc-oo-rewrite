@@ -54,6 +54,11 @@ package "Officers Online App" {
     usecase "Send Bulk Email" as UC_Email
     usecase "Schedule Email" as UC_Schedule
   }
+
+  package "Program Activities & Star Council" {
+    usecase "Submit Program Activity (Form 10784)" as UC_SubmitForm10784
+    usecase "View Star Council Tracker" as UC_ViewStarCouncilTracker
+  }
 }
 
 ' Relationships
@@ -73,6 +78,8 @@ FS --> UC_Officers
 FS --> UC_SafeEnv
 FS --> UC_Email
 FS --> UC_Schedule
+FS --> UC_SubmitForm10784
+FS --> UC_ViewStarCouncilTracker
 
 ' GK Relationships
 GK --> UC_Roster
@@ -80,22 +87,28 @@ GK --> UC_Audit
 GK --> UC_SafeEnv
 GK --> UC_Officers
 GK --> UC_Email
+GK --> UC_SubmitForm10784
+GK --> UC_ViewStarCouncilTracker
 
 ' Delegate Relationships (Granular)
 Delegate --> UC_Roster
-' Note: Specific permissions would enable other UCs
+Delegate --> UC_SubmitForm10784 : (e.g. Program Director)
+Delegate --> UC_ViewStarCouncilTracker
 
 ' District Officer Relationships
 DO --> UC_Roster
 DO --> UC_Audit : (Read Only)
 DO --> UC_SafeEnv : (Read Only)
+DO --> UC_ViewStarCouncilTracker : (Read Only)
 
 ' Member Relationships
 Member --> UC_Card : (View Own)
+Member --> UC_ViewStarCouncilTracker : (View Progress)
 
 ' System Interactions
 UC_Intake .> Supreme : <<verify>>
 UC_Transfer .> Supreme : <<sync>>
+UC_SubmitForm10784 .> Supreme : <<sync>>
 
 @enduml
 ```
@@ -113,6 +126,11 @@ UC_Transfer .> Supreme : <<sync>>
 *   **Assess Dues:** Batch process to apply annual dues to billable members.
 *   **Receive Payment:** Recording a member's dues payment (Cash/Check/Card) and generating a receipt.
 *   **Council Ledger:** Recording general income and expenses for the council (e.g., Hall Rental, Pancake Breakfast).
+
+### Program Activities & Compliance
+
+*   **Submit Program Activity (Form 10784):** Officers and Program Directors (Delegates) submit reports for service activities across the four Faith in Action categories. Submissions are synced to Supreme and assigned a verification number.
+*   **View Star Council Tracker:** Interactive dashboard showing real-time progress towards the Father McGivney (membership), Founders' (insurance), and Columbian (programs) awards, along with standard required forms and Safe Environment training status.
 
 ### Administration & Communication
 

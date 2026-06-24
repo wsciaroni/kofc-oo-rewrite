@@ -148,3 +148,89 @@ App --> User : "Sync Complete" Notification
 deactivate App
 @enduml
 ```
+
+## 4. Offline Form 10784 Submission & Sync
+
+This diagram shows how a program activity submission is handled when the device is offline, queued locally, and synced once connectivity is restored.
+
+```plantuml
+@startuml
+actor "Program Director" as User
+participant "Mobile App" as App
+participant "Local DB (Isar)" as LocalDB
+participant "Mutation Log" as Log
+participant "Backend Service" as Backend
+participant "Supreme Database" as Supreme
+
+== Offline Submission ==
+
+User -> App : Fills Form 10784 & Clicks "Submit"
+activate App
+App -> App : Detect Connection (Offline)
+App -> LocalDB : Save Activity (Status: PENDING_SYNC, Temp UUID)
+App -> Log : Add Entry: {Action: SUBMIT_PROGRAM_ACTIVITY, Data: ...}
+App --> User : Saved Locally (Sync Pending Icon)
+deactivate App
+
+== Reconnection & Synchronization ==
+
+App -> App : Detect Internet Connection
+activate App
+App -> Log : Read Pending Mutations
+activate Log
+
+group Sync Process
+    App -> Backend : SubmitProgramActivity(ActivityData)
+    activate Backend
+    Backend -> Backend : Persist Activity in DB
+    Backend -> Supreme : Register Fraternal Program
+    activate Supreme
+    Supreme --> Backend : Acknowledge & Return Confirmation #
+    deactivate Supreme
+    Backend --> App : SubmitProgramActivityResponse(Success, Confirmation #)
+    deactivate Backend
+    App -> LocalDB : Update Activity (Status: SUBMITTED, Confirmation #)
+    App -> Log : Delete Processed Mutation
+end
+
+deactivate Log
+App --> User : Notification: "Activity Synced with Supreme"
+deactivate App
+@enduml
+```
+
+## 5. Star Council Tracker Dashboard Retrieval
+
+This diagram describes the retrieval and calculation flow for the Star Council progress dashboard.
+
+```plantuml
+@startuml
+actor Officer
+participant "Mobile App" as App
+participant "Local DB (Isar)" as LocalDB
+participant "Backend Service" as Backend
+
+Officer -> App : Opens Star Council Tab
+activate App
+
+App -> Backend : GetStarCouncilStatus(CouncilID, FraternalYear)
+activate Backend
+
+group Calculation & Query
+    Backend -> Backend : Query membership growth vs target (McGivney)
+    Backend -> Backend : Query seminar counts (Founders')
+    Backend -> Backend : Query program activities by category (Columbian)
+    Backend -> Backend : Check required form compliance (185, 365, 1728)
+    Backend -> Backend : Check Safe Environment compliance status
+end
+
+Backend --> App : GetStarCouncilStatusResponse(Metrics & Compliance Flags)
+deactivate Backend
+
+App -> LocalDB : Cache Star Council Status
+App -> App : Render progress bars and checklist
+App --> Officer : Display Star Council Status Dashboard
+deactivate App
+@enduml
+```
+
