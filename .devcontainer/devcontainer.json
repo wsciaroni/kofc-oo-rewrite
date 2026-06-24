@@ -1,0 +1,16 @@
+{
+  "name": "KofC OO Rewrite Devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "Dart-Code.flutter"
+      ]
+    }
+  },
+  "forwardPorts": [5000, 5001],
+  "remoteUser": "vscode"
+}
