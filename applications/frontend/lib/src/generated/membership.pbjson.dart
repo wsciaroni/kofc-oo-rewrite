@@ -107,3 +107,4 @@ final $typed_data.Uint8List memberProfileDescriptor = $convert.base64Decode(
     'Cg1NZW1iZXJQcm9maWxlEh0KCmZpcnN0X25hbWUYASABKAlSCWZpcnN0TmFtZRIbCglsYXN0X2'
     '5hbWUYAiABKAlSCGxhc3ROYW1lEiMKDW1lbWJlcl9udW1iZXIYAyABKAlSDG1lbWJlck51bWJl'
     'cg==');
+

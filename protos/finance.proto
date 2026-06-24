@@ -3,7 +3,6 @@ syntax = "proto3";
 package kofc.finance.v1;
 
 import "google/type/money.proto";
-import "google/protobuf/timestamp.proto";
 
 service FinanceService {
   // Record a ledger entry (Expense or Income)

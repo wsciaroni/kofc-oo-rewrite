@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'finance.pbenum.dart';
-import 'google/type/money.pb.dart' as $2;
+import 'google/type/money.pb.dart' as $4;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -24,7 +24,7 @@ class TransactionRequest extends $pb.GeneratedMessage {
   factory TransactionRequest({
     $core.int? councilId,
     TransactionType? type,
-    $2.Money? amount,
+    $4.Money? amount,
     $core.String? description,
     $core.String? checkNumber,
     $core.int? linkedMemberId,
@@ -57,7 +57,7 @@ class TransactionRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TransactionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'kofc.finance.v1'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'councilId', $pb.PbFieldType.O3)
     ..e<TransactionType>(2, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: TransactionType.TRANSACTION_TYPE_UNSPECIFIED, valueOf: TransactionType.valueOf, enumValues: TransactionType.values)
-    ..aOM<$2.Money>(3, _omitFieldNames ? '' : 'amount', subBuilder: $2.Money.create)
+    ..aOM<$4.Money>(3, _omitFieldNames ? '' : 'amount', subBuilder: $4.Money.create)
     ..aOS(4, _omitFieldNames ? '' : 'description')
     ..aOS(5, _omitFieldNames ? '' : 'checkNumber')
     ..a<$core.int>(6, _omitFieldNames ? '' : 'linkedMemberId', $pb.PbFieldType.O3)
@@ -104,15 +104,15 @@ class TransactionRequest extends $pb.GeneratedMessage {
   void clearType() => $_clearField(2);
 
   @$pb.TagNumber(3)
-  $2.Money get amount => $_getN(2);
+  $4.Money get amount => $_getN(2);
   @$pb.TagNumber(3)
-  set amount($2.Money v) { $_setField(3, v); }
+  set amount($4.Money v) { $_setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasAmount() => $_has(2);
   @$pb.TagNumber(3)
   void clearAmount() => $_clearField(3);
   @$pb.TagNumber(3)
-  $2.Money ensureAmount() => $_ensure(2);
+  $4.Money ensureAmount() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.String get description => $_getSZ(3);

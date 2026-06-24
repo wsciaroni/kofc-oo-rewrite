@@ -88,3 +88,4 @@ const DuesUpdateResponse$json = {
 /// Descriptor for `DuesUpdateResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List duesUpdateResponseDescriptor = $convert.base64Decode(
     'ChJEdWVzVXBkYXRlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcw==');
+

@@ -9,10 +9,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.22" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="../../protos/**/*.proto" GrpcServices="Server" />
+    <Protobuf Include="../../protos/*.proto" GrpcServices="Server" />
+    <Protobuf Include="../../protos/google/type/money.proto" GrpcServices="Server" />
   </ItemGroup>
 
 </Project>

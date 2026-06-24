@@ -15,28 +15,28 @@ import 'dart:core' as $core;
 import 'package:grpc/service_api.dart' as $grpc;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'finance.pb.dart' as $0;
+import 'finance.pb.dart' as $1;
 
 export 'finance.pb.dart';
 
 @$pb.GrpcServiceName('kofc.finance.v1.FinanceService')
 class FinanceServiceClient extends $grpc.Client {
-  static final _$recordTransaction = $grpc.ClientMethod<$0.TransactionRequest, $0.TransactionResponse>(
+  static final _$recordTransaction = $grpc.ClientMethod<$1.TransactionRequest, $1.TransactionResponse>(
       '/kofc.finance.v1.FinanceService/RecordTransaction',
-      ($0.TransactionRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.TransactionResponse.fromBuffer(value));
-  static final _$updateDuesStatus = $grpc.ClientMethod<$0.DuesUpdateRequest, $0.DuesUpdateResponse>(
+      ($1.TransactionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.TransactionResponse.fromBuffer(value));
+  static final _$updateDuesStatus = $grpc.ClientMethod<$1.DuesUpdateRequest, $1.DuesUpdateResponse>(
       '/kofc.finance.v1.FinanceService/UpdateDuesStatus',
-      ($0.DuesUpdateRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.DuesUpdateResponse.fromBuffer(value));
+      ($1.DuesUpdateRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.DuesUpdateResponse.fromBuffer(value));
 
   FinanceServiceClient(super.channel, {super.options, super.interceptors});
 
-  $grpc.ResponseFuture<$0.TransactionResponse> recordTransaction($0.TransactionRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$1.TransactionResponse> recordTransaction($1.TransactionRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$recordTransaction, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.DuesUpdateResponse> updateDuesStatus($0.DuesUpdateRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$1.DuesUpdateResponse> updateDuesStatus($1.DuesUpdateRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateDuesStatus, request, options: options);
   }
 }
@@ -46,30 +46,30 @@ abstract class FinanceServiceBase extends $grpc.Service {
   $core.String get $name => 'kofc.finance.v1.FinanceService';
 
   FinanceServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.TransactionRequest, $0.TransactionResponse>(
+    $addMethod($grpc.ServiceMethod<$1.TransactionRequest, $1.TransactionResponse>(
         'RecordTransaction',
         recordTransaction_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.TransactionRequest.fromBuffer(value),
-        ($0.TransactionResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.DuesUpdateRequest, $0.DuesUpdateResponse>(
+        ($core.List<$core.int> value) => $1.TransactionRequest.fromBuffer(value),
+        ($1.TransactionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.DuesUpdateRequest, $1.DuesUpdateResponse>(
         'UpdateDuesStatus',
         updateDuesStatus_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.DuesUpdateRequest.fromBuffer(value),
-        ($0.DuesUpdateResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $1.DuesUpdateRequest.fromBuffer(value),
+        ($1.DuesUpdateResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.TransactionResponse> recordTransaction_Pre($grpc.ServiceCall $call, $async.Future<$0.TransactionRequest> $request) async {
+  $async.Future<$1.TransactionResponse> recordTransaction_Pre($grpc.ServiceCall $call, $async.Future<$1.TransactionRequest> $request) async {
     return recordTransaction($call, await $request);
   }
 
-  $async.Future<$0.DuesUpdateResponse> updateDuesStatus_Pre($grpc.ServiceCall $call, $async.Future<$0.DuesUpdateRequest> $request) async {
+  $async.Future<$1.DuesUpdateResponse> updateDuesStatus_Pre($grpc.ServiceCall $call, $async.Future<$1.DuesUpdateRequest> $request) async {
     return updateDuesStatus($call, await $request);
   }
 
-  $async.Future<$0.TransactionResponse> recordTransaction($grpc.ServiceCall call, $0.TransactionRequest request);
-  $async.Future<$0.DuesUpdateResponse> updateDuesStatus($grpc.ServiceCall call, $0.DuesUpdateRequest request);
+  $async.Future<$1.TransactionResponse> recordTransaction($grpc.ServiceCall call, $1.TransactionRequest request);
+  $async.Future<$1.DuesUpdateResponse> updateDuesStatus($grpc.ServiceCall call, $1.DuesUpdateRequest request);
 }
