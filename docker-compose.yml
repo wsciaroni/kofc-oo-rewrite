@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: applications/backend/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - backend-db:/app
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: applications/frontend/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-db:
